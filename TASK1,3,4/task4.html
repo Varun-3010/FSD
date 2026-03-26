@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Management System</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    padding: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 5px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #888;
+    margin-bottom: 30px;
+    font-size: 14px;
+  }
+
+  /* ---- SECTION ---- */
+  .section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+
+  .section h2 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eee;
+  }
+
+  .section h2 span {
+    font-size: 13px;
+    font-weight: normal;
+    color: #888;
+    margin-left: 8px;
+  }
+
+  /* ---- 3-TABLE GRID ---- */
+  .tables-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .table-box h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+
+  .table-box.customers h3 { background: #e8f5e9; color: #2e7d32; }
+  .table-box.orders h3    { background: #fff8e1; color: #f57f17; }
+  .table-box.products h3  { background: #fce4ec; color: #c62828; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background: #f0f0f0;
+    padding: 7px 10px;
+    text-align: left;
+    font-size: 12px;
+    color: #555;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  .pk { color: #1565c0; font-weight: bold; }
+  .fk { color: #2e7d32; }
+
+  /* ---- STATUS BADGES ---- */
+  .status {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .status.delivered { background: #e8f5e9; color: #2e7d32; }
+  .status.shipped   { background: #e3f2fd; color: #1565c0; }
+  .status.pending   { background: #fff8e1; color: #f57f17; }
+
+  /* ---- SQL BLOCK ---- */
+  .sql-block {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 8px;
+    padding: 15px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 15px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .kw  { color: #89b4fa; font-weight: bold; }
+  .fn  { color: #cba6f7; }
+  .tbl { color: #a6e3a1; }
+  .cmt { color: #6c7086; font-style: italic; }
+  .num { color: #fab387; }
+
+  /* ---- RESULT TABLE ---- */
+  .result-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- HIGHLIGHT CARDS ---- */
+  .highlights {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .card.gold  { background: #fffde7; border: 1px solid #ffe082; }
+  .card.green { background: #e8f5e9; border: 1px solid #a5d6a7; }
+
+  .card .icon { font-size: 2rem; }
+
+  .card .info .label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .card .info .value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 3px 0;
+  }
+
+  .card.gold  .info .value { color: #f57f17; }
+  .card.green .info .value { color: #2e7d32; }
+
+  .card .info .detail { font-size: 12px; color: #666; }
+
+  /* Relationship arrows */
+  .relationship {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 0;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .rel-box {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 13px;
+  }
+
+  .rel-box.c { background: #e8f5e9; color: #2e7d32; }
+  .rel-box.o { background: #fff8e1; color: #f57f17; }
+  .rel-box.p { background: #fce4ec; color: #c62828; }
+
+  .arrow { color: #aaa; font-size: 18px; }
+  .join-label { font-size: 11px; color: #aaa; }
+
+  /* highlight row */
+  tr.best td { background: #fffde7; }
+
+</style>
+</head>
+<body>
+
+<h1>🛒 Order Management System</h1>
+<p class="subtitle">Uses SQL JOINs and Subqueries to connect Customers, Orders, and Products</p>
+
+<!-- ================================================ -->
+<!-- STEP 1: DATABASE TABLES -->
+<!-- ================================================ -->
+<div class="section">
+  <h2>Step 1: Our 3 Database Tables</h2>
+
+  <div class="tables-grid">
+
+    <!-- Customers -->
+    <div class="table-box customers">
+      <h3>👤 Customers</h3>
+      <table>
+        <thead><tr><th>customer_id</th><th>name</th><th>city</th></tr></thead>
+        <tbody>
+          <tr><td class="pk">C001</td><td>Alice Johnson</td><td>New York</td></tr>
+          <tr><td class="pk">C002</td><td>Bob Smith</td><td>Chicago</td></tr>
+          <tr><td class="pk">C003</td><td>Carol Davis</td><td>Houston</td></tr>
+          <tr><td class="pk">C004</td><td>Dan Wilson</td><td>Seattle</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Orders -->
+    <div class="table-box orders">
+      <h3>🛒 Orders</h3>
+      <table>
+        <thead><tr><th>order_id</th><th>customer_id</th><th>product_id</th><th>qty</th><th>total</th></tr></thead>
+        <tbody>
+          <tr><td class="pk">O101</td><td class="fk">C001</td><td class="fk">P01</td><td>2</td><td>$2,598</td></tr>
+          <tr><td class="pk">O102</td><td class="fk">C002</td><td class="fk">P02</td><td>1</td><td>$799</td></tr>
+          <tr><td class="pk">O103</td><td class="fk">C001</td><td class="fk">P03</td><td>3</td><td>$897</td></tr>
+          <tr><td class="pk">O104</td><td class="fk">C003</td><td class="fk">P01</td><td>1</td><td>$1,299</td></tr>
+          <tr><td class="pk">O105</td><td class="fk">C001</td><td class="fk">P04</td><td>2</td><td>$4,998</td></tr>
+          <tr><td class="pk">O106</td><td class="fk">C004</td><td class="fk">P02</td><td>2</td><td>$1,598</td></tr>
+          <tr><td class="pk">O107</td><td class="fk">C002</td><td class="fk">P03</td><td>4</td><td>$1,196</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Products -->
+    <div class="table-box products">
+      <h3>📦 Products</h3>
+      <table>
+        <thead><tr><th>product_id</th><th>name</th><th>price</th></tr></thead>
+        <tbody>
+          <tr><td class="pk">P01</td><td>MacBook Pro</td><td>$1,299</td></tr>
+          <tr><td class="pk">P02</td><td>iPhone 15</td><td>$799</td></tr>
+          <tr><td class="pk">P03</td><td>AirPods Pro</td><td>$299</td></tr>
+          <tr><td class="pk">P04</td><td>iPad Pro</td><td>$2,499</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================ -->
+<!-- STEP 2: HOW TABLES ARE LINKED -->
+<!-- ================================================ -->
+<div class="section">
+  <h2>Step 2: How Tables Are Linked (JOIN)</h2>
+  <div class="relationship">
+    <div class="rel-box c">Customers</div>
+    <div>
+      <div class="arrow">→</div>
+      <div class="join-label">customer_id</div>
+    </div>
+    <div class="rel-box o">Orders</div>
+    <div>
+      <div class="arrow">→</div>
+      <div class="join-label">product_id</div>
+    </div>
+    <div class="rel-box p">Products</div>
+  </div>
+  <p style="text-align:center; color:#666; font-size:13px;">
+    Orders links to Customers via <b>customer_id</b> and to Products via <b>product_id</b>
+  </p>
+</div>
+
+<!-- ================================================ -->
+<!-- QUERY 1: ORDER HISTORY -->
+<!-- ================================================ -->
+<div class="section">
+  <h2>Query 1: Customer Order History <span>— uses INNER JOIN</span></h2>
+
+  <div class="sql-block"><span class="cmt">-- Join all 3 tables to see each customer's full order history</span>
+<span class="kw">SELECT</span>  c.name          <span class="kw">AS</span> customer_name,
+        o.order_id,
+        p.product_name,
+        o.quantity,
+        o.total_amount,
+        o.status
+<span class="kw">FROM</span>    <span class="tbl">Customers</span> c
+<span class="kw">JOIN</span>    <span class="tbl">Orders</span>    o  <span class="kw">ON</span> c.customer_id = o.customer_id
+<span class="kw">JOIN</span>    <span class="tbl">Products</span>  p  <span class="kw">ON</span> o.product_id  = p.product_id
+<span class="kw">ORDER BY</span> c.name <span class="kw">ASC</span>;</div>
+
+  <div class="result-label">📋 Result</div>
+  <table>
+    <thead>
+      <tr><th>Customer</th><th>Order ID</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Alice Johnson</td><td>O101</td><td>MacBook Pro</td><td>2</td><td>$2,598</td><td><span class="status shipped">Shipped</span></td></tr>
+      <tr><td>Alice Johnson</td><td>O103</td><td>AirPods Pro</td><td>3</td><td>$897</td><td><span class="status pending">Pending</span></td></tr>
+      <tr class="best"><td>Alice Johnson</td><td>O105</td><td>iPad Pro</td><td>2</td><td><b>$4,998 ⭐</b></td><td><span class="status delivered">Delivered</span></td></tr>
+      <tr><td>Bob Smith</td><td>O102</td><td>iPhone 15</td><td>1</td><td>$799</td><td><span class="status delivered">Delivered</span></td></tr>
+      <tr><td>Bob Smith</td><td>O107</td><td>AirPods Pro</td><td>4</td><td>$1,196</td><td><span class="status delivered">Delivered</span></td></tr>
+      <tr><td>Carol Davis</td><td>O104</td><td>MacBook Pro</td><td>1</td><td>$1,299</td><td><span class="status shipped">Shipped</span></td></tr>
+      <tr><td>Dan Wilson</td><td>O106</td><td>iPhone 15</td><td>2</td><td>$1,598</td><td><span class="status pending">Pending</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ================================================ -->
+<!-- QUERY 2: HIGHEST VALUE ORDER -->
+<!-- ================================================ -->
+<div class="section">
+  <h2>Query 2: Highest Value Order <span>— uses Subquery</span></h2>
+
+  <div class="sql-block"><span class="cmt">-- Subquery inside WHERE finds the maximum order total first,
+-- then the outer query fetches the matching row</span>
+<span class="kw">SELECT</span>  c.name  <span class="kw">AS</span> customer_name,
+        o.order_id,
+        p.product_name,
+        o.total_amount
+<span class="kw">FROM</span>    <span class="tbl">Orders</span>   o
+<span class="kw">JOIN</span>    <span class="tbl">Customers</span> c  <span class="kw">ON</span> o.customer_id = c.customer_id
+<span class="kw">JOIN</span>    <span class="tbl">Products</span>  p  <span class="kw">ON</span> o.product_id  = p.product_id
+<span class="kw">WHERE</span>  o.total_amount = (
+    <span class="kw">SELECT MAX</span>(total_amount) <span class="kw">FROM</span> <span class="tbl">Orders</span>   <span class="cmt">-- ← this is the subquery</span>
+);</div>
+
+  <div class="result-label">📋 Result</div>
+  <table>
+    <thead><tr><th>Customer</th><th>Order ID</th><th>Product</th><th>Total Amount</th></tr></thead>
+    <tbody>
+      <tr class="best"><td>Alice Johnson</td><td>O105</td><td>iPad Pro</td><td><b style="color:#f57f17">$4,998 🏆 Highest!</b></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ================================================ -->
+<!-- QUERY 3: MOST ACTIVE CUSTOMER -->
+<!-- ================================================ -->
+<div class="section">
+  <h2>Query 3: Most Active Customer <span>— uses GROUP BY + ORDER BY</span></h2>
+
+  <div class="sql-block"><span class="cmt">-- Count how many orders each customer placed, then sort by most orders</span>
+<span class="kw">SELECT</span>  c.name              <span class="kw">AS</span> customer_name,
+        <span class="fn">COUNT</span>(o.order_id)   <span class="kw">AS</span> total_orders,
+        <span class="fn">SUM</span>(o.total_amount) <span class="kw">AS</span> total_spent
+<span class="kw">FROM</span>    <span class="tbl">Customers</span> c
+<span class="kw">JOIN</span>    <span class="tbl">Orders</span>    o  <span class="kw">ON</span> c.customer_id = o.customer_id
+<span class="kw">GROUP BY</span> c.customer_id, c.name
+<span class="kw">ORDER BY</span> total_orders <span class="kw">DESC</span>;</div>
+
+  <div class="result-label">📋 Result (sorted by most orders)</div>
+  <table>
+    <thead><tr><th>Customer</th><th>Total Orders</th><th>Total Spent</th></tr></thead>
+    <tbody>
+      <tr class="best"><td><b>Alice Johnson ⭐</b></td><td><b>3 orders</b></td><td><b>$8,493</b></td></tr>
+      <tr><td>Bob Smith</td><td>2 orders</td><td>$1,995</td></tr>
+      <tr><td>Carol Davis</td><td>1 order</td><td>$1,299</td></tr>
+      <tr><td>Dan Wilson</td><td>1 order</td><td>$1,598</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
